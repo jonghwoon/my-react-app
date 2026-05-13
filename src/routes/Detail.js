@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import styles from "./Detail.module.css";
 
 function Detail() {
   const [loading, setLoading] = useState(true);
@@ -17,25 +18,47 @@ function Detail() {
   useEffect(() => {
     getDetail();
   }, []);
-  console.log(detail);
+
   return (
-    <div>
+    <div className={styles.container}>
       {loading ? (
-        <h1>Loading...</h1>
+        <h1 className={styles.loader}>Loading...</h1>
       ) : (
         <div>
-          <button onClick={() => window.history.back()}>Go Back</button>
-          <hr />
-          <h2>{detail.title}</h2>
-          <img src={detail.medium_cover_image} alt={detail.title} />
-          <h3>Rating: {detail.rating}</h3>
-          <p>{detail.description_full}</p>
-          <ul>
-            <h3>Genres</h3>
-            {detail.genres.map((g) => (
-              <li key={g}>{g}</li>
-            ))}
-          </ul>
+          <button
+            className={styles.backBtn}
+            onClick={() => window.history.back()}
+          >
+            &larr; Go Back
+          </button>
+          <div className={styles.card}>
+            <img
+              src={detail.large_cover_image || detail.medium_cover_image}
+              alt={detail.title}
+              className={styles.cover}
+            />
+            <div className={styles.content}>
+              <h2 className={styles.title}>{detail.title}</h2>
+              <div className={styles.rating}>
+                <div className={styles.starWrap}>
+                  ★★★★★
+                  <div
+                    className={styles.starFill}
+                    style={{ width: `${(detail.rating / 10) * 100}%` }}
+                  >
+                    ★★★★★
+                  </div>
+                </div>
+                <span>{detail.rating} / 10.0</span>
+              </div>
+              <p className={styles.description}>{detail.description_full}</p>
+              <ul className={styles.genres}>
+                {detail.genres.map((g) => (
+                  <li key={g}>{g}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
     </div>

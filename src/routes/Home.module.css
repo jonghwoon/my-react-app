@@ -1,0 +1,19 @@
+.container {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loader {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 300;
+  margin-top: 100px;
+  color: #555;
+}
+
+.movies {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+}
