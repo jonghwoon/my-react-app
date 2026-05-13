@@ -2,66 +2,36 @@ import { useState, useEffect } from "react";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [coins, setCoins] = useState([]);
-  const [amount, setAmount] = useState(0);
-  const [selectedPrice, setSelectedPrice] = useState(0);
-
+  const [movies, setMovies] = useState([]);
+  const getMovies = async () => {
+    const json = await (
+      await fetch(
+        `https://movies-api.accel.li/api/v2/list_movies.json?minimum_rating=9&sort_by=year`,
+      )
+    ).json();
+    setMovies(json.data.movies);
+    setLoading(false);
+  };
   useEffect(() => {
-    fetch("https://api.coinpaprika.com/v1/tickers")
-      .then((response) => response.json())
-      .then((json) => {
-        setCoins(json);
-        if (json.length > 0) {
-          setSelectedPrice(json[0].quotes.USD.price);
-        }
-        setLoading(false);
-      });
+    getMovies();
   }, []);
-
-  const onAmountChange = (event) => {
-    const value = event.target.value;
-    if (value === "") {
-      setAmount(0);
-    } else {
-      setAmount(parseFloat(value));
-    }
-  };
-
-  const onSelectChange = (event) => {
-    setSelectedPrice(parseFloat(event.target.value));
-  };
-
+  console.log(movies);
   return (
     <div>
-      <h1>The Coins! {loading ? "" : `(${coins.length})`}</h1>
-      {loading ? (
-        <strong>Loading...</strong>
-      ) : (
-        <>
-          <select onChange={onSelectChange}>
-            {coins.map((coin) => (
-              <option key={coin.id} value={coin.quotes.USD.price}>
-                {coin.name} ({coin.symbol}): ${coin.quotes.USD.price} USD
-              </option>
-            ))}
-          </select>
-          <hr />
-          <div>
-            <input
-              value={amount === 0 ? "" : amount}
-              onChange={onAmountChange}
-              type="number"
-              placeholder="Enter your USD"
-            />{" "}
-            USD
-          </div>
-
-          <h3>
-            I can buy:{" "}
-            {selectedPrice > 0 ? (amount / selectedPrice).toFixed(6) : 0} units
-          </h3>
-        </>
-      )}
+      {loading
+        ? "Loading..."
+        : movies.map((movie) => (
+            <div key={movie.id}>
+              <img src={movie.medium_cover_image} alt={movie.title} />
+              <h2>{movie.title}</h2>
+              <p>{movie.summary}</p>
+              <ul>
+                {movie.genres.map((g) => (
+                  <li key={g}>{g}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
     </div>
   );
 }
