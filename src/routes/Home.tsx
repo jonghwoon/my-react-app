@@ -38,7 +38,7 @@ function Home() {
   const onNextClick = () =>
     setPage((current) => Math.min(maxPage, current + 1));
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setQuery(searchTerm);
     setPage(1); // 検索時新しく１ページとして設定
@@ -82,7 +82,7 @@ function Home() {
         <h1 className={styles.loader}>Loading...</h1>
       ) : movies.length === 0 ? (
         <>
-          <h1 className={styles.loader}>검색 결과가 없습니다.</h1>
+          <h1 className={styles.loader}>検索結果がありません。</h1>
         </>
       ) : (
         <>

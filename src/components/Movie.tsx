@@ -13,14 +13,18 @@ interface IMovieProps {
 function Movie({ id, year, coverImg, title, summary, genres }: IMovieProps) {
   return (
     <div className={styles.movie}>
-      <img src={coverImg} alt={title} className={styles.movie__img} />
-      <div>
-        <h2 className={styles.movie__title}>
+      <Link to={`/movie/${id}`} style={{ display: "block" }}>
+        <img src={coverImg} alt={title} className={styles.cover} />
+      </Link>
+      <div className={styles.info}>
+        <h2 className={styles.title}>
           <Link to={`/movie/${id}`}>{title}</Link>
         </h2>
-        <h3 className={styles.movie__year}>{year}</h3>
-        <p>{summary?.length > 235 ? `${summary.slice(0, 235)}...` : summary}</p>
-        <ul className={styles.movie__genres}>
+        <h3 className={styles.year}>{year}</h3>
+        <p className={styles.summary}>
+          {summary?.length > 235 ? `${summary.slice(0, 235)}...` : summary}
+        </p>
+        <ul className={styles.genres}>
           {genres?.map((g) => (
             <li key={g}>{g}</li>
           ))}
