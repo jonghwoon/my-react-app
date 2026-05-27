@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Movie from "../components/Movie";
 import styles from "./Home.module.css";
 
@@ -12,36 +14,51 @@ interface IMovie {
 }
 
 function Home() {
-  const [loading, setLoading] = useState(true);
-  const [movies, setMovies] = useState<IMovie[]>([]);
-  const [page, setPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pageParam = searchParams.get("page");
+  const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const query = searchParams.get("query") || "";
 
-  useEffect(() => {
-    const getMovies = async () => {
-      setLoading(true);
-      const limit = 12; // ページごとに表示する件数
+  const [searchTerm, setSearchTerm] = useState(query);
+
+  const limit = 12; // ページごとに表示する件数
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["movies", page, query],
+    queryFn: async () => {
       const url = query
         ? `https://movies-api.accel.li/api/v2/list_movies.json?query_term=${query}&sort_by=year&page=${page}&limit=${limit}`
         : `https://movies-api.accel.li/api/v2/list_movies.json?minimum_rating=9&sort_by=year&page=${page}&limit=${limit}`;
-      const json = await (await fetch(url)).json();
-      setMovies(json.data.movies || []); // データがない場合の処理
-      setMaxPage(Math.ceil((json.data.movie_count || 0) / limit) || 1); // 全てのページ数計算
-      setLoading(false);
-    };
-    getMovies();
-  }, [page, query]);
+      const response = await fetch(url);
+      return response.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 
-  const onPrevClick = () => setPage((current) => Math.max(1, current - 1));
-  const onNextClick = () =>
-    setPage((current) => Math.min(maxPage, current + 1));
+  const movies: IMovie[] = data?.data?.movies || [];
+  const maxPage = Math.ceil((data?.data?.movie_count || 0) / limit) || 1;
 
-  const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const onPrevClick = () => {
+    setSearchParams((prev) => {
+      prev.set("page", String(Math.max(1, page - 1)));
+      return prev;
+    });
+  };
+
+  const onNextClick = () => {
+    setSearchParams((prev) => {
+      prev.set("page", String(Math.min(maxPage, page + 1)));
+      return prev;
+    });
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setQuery(searchTerm);
-    setPage(1); // 検索時新しく１ページとして設定
+    if (searchTerm) {
+      setSearchParams({ query: searchTerm, page: "1" });
+    } else {
+      setSearchParams({ page: "1" });
+    }
   };
 
   return (
@@ -78,7 +95,7 @@ function Home() {
           検索
         </button>
       </form>
-      {loading ? (
+      {isLoading ? (
         <h1 className={styles.loader}>Loading...</h1>
       ) : movies.length === 0 ? (
         <>

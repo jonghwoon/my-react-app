@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import styles from "./Detail.module.css";
 
 interface IMovieDetail {
@@ -12,33 +12,32 @@ interface IMovieDetail {
 }
 
 function Detail() {
-  const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
-  const [detail, setDetail] = useState<IMovieDetail | null>(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const getDetail = async () => {
-      const json = await (
-        await fetch(
-          `https://movies-api.accel.li/api/v2/movie_details.json?movie_id=${id}`,
-        )
-      ).json();
-      setDetail(json.data.movie);
-      setLoading(false);
-    };
-    getDetail();
-  }, [id]);
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ["movieDetail", id],
+    queryFn: async () => {
+      const response = await fetch(
+        `https://movies-api.accel.li/api/v2/movie_details.json?movie_id=${id}`
+      );
+      const json = await response.json();
+      return json.data.movie as IMovieDetail;
+    },
+    enabled: !!id,
+    staleTime: 1000 * 60 * 60, // 1 hour cache
+  });
 
   return (
     <div className={styles.container}>
-      {loading ? (
+      {isLoading ? (
         <h1 className={styles.loader}>Loading...</h1>
       ) : (
         detail && (
           <div>
             <button
               className={styles.backBtn}
-              onClick={() => globalThis.history.back()}
+              onClick={() => navigate(-1)}
             >
               &larr; Go Back
             </button>
